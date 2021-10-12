@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"math/rand"
 	"regexp"
 	"time"
@@ -20,4 +21,26 @@ func RandID(n int) string {
 func ValidateDate(str string) bool {
 	dateRegex := regexp.MustCompile(`\d{2}/\d{2}/\d{4} \d{2}:\d{2}`)
 	return dateRegex.MatchString(str)
+}
+
+func GetFormattedDate(t time.Time) string {
+	str := fmt.Sprintf("%d/%d/%d %d:%02d",
+		t.Day(),
+		t.Month(),
+		t.Year(),
+		t.Hour(),
+		t.Minute(),
+	)
+
+	return str
+}
+
+func PrintError(msg ...string) {
+	if len(msg) > 0 && msg[0] != "" {
+		for _, m := range msg {
+			fmt.Println(m)
+		}
+	} else {
+		fmt.Println("Invalid input command!")
+	}
 }

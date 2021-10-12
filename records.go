@@ -131,52 +131,16 @@ func (r *Records) Clear() {
 	}
 }
 
-func (r *Records) Update(id string, params []string) (bool, string) {
+func (r *Records) Update(id string, params []string) {
 	formatErrorMsg := "Invalid input format!"
 
 	if len(params) <= 1 {
-		return false, formatErrorMsg
+		PrintError(formatErrorMsg)
 	}
 
 	for i, record := range r.Records {
 		if record.Id == id {
-			for i, v := range params {
-				if v == "-a" {
-					if len(params) <= i+1 {
-						return false, formatErrorMsg
-					}
-
-					record.Amount, _ = strconv.ParseInt(params[i+1], 10, 64)
-				}
-
-				if v == "-d" {
-					if len(params) <= i+1 {
-						return false, formatErrorMsg
-					}
-
-					record.Description = params[i+1]
-				}
-
-				if v == "--out" {
-					record.Type = "out"
-				}
-
-				if v == "--in" {
-					record.Type = "in"
-				}
-
-				if v == "-t" {
-					if len(params) <= i+1 {
-						return false, ""
-					}
-
-					if ValidateDate(params[i+1]) == false {
-						return false, "Invalid date format! \nValid format: \"dd/mm/yyyy hh:MM\" (with double quotes)"
-					}
-
-					record.At = params[i+1]
-				}
-			}
+			record.editWithParam(params)
 			r.Records[i] = record
 
 			fmt.Printf("Success, record updated!\n%s\n", record)
@@ -185,86 +149,99 @@ func (r *Records) Update(id string, params []string) (bool, string) {
 			break
 		}
 	}
-
-	return true, ""
 }
 
-func (r *Records) AddRecord(params []string) (bool, string) {
+func (r *Records) AddRecord(params []string) {
 	formatErrorMsg := "Invalid input format!"
 
 	if len(params) <= 1 {
-		return false, formatErrorMsg
+		PrintError(formatErrorMsg)
+		return
 	}
 
-	id := RandID(5)
-	var (
-		amount   int64
-		desc, at string
-	)
-	_type := "in"
-
-	for i, v := range params {
-		if v == "-a" {
-			if len(params) <= i+1 {
-				return false, formatErrorMsg
-			}
-
-			amount, _ = strconv.ParseInt(params[i+1], 10, 64)
-		}
-
-		if v == "-d" {
-			if len(params) <= i+1 {
-				return false, formatErrorMsg
-			}
-
-			desc = params[i+1]
-		}
-
-		if v == "--out" {
-			_type = "out"
-		}
-
-		if v == "-t" {
-			if len(params) <= i+1 {
-				return false, ""
-			}
-
-			if ValidateDate(params[i+1]) == false {
-				return false, "Invalid date format! \nValid format: \"dd/mm/yyyy hh:MM\" (with double quotes)"
-			}
-
-			at = params[i+1]
+	// amount is required
+	var amountFilled = false
+	for _, p := range params {
+		if p == "-a" {
+			amountFilled = true
 		}
 	}
 
-	now := time.Now()
-	at = fmt.Sprintf("%d/%d/%d %d:%d",
-		now.Day(),
-		now.Month(),
-		now.Year(),
-		now.Hour(),
-		now.Minute(),
-	)
+	if amountFilled == false {
+		PrintError("Error, param -a (amount) is required!")
+		return
+	}
+
+	// set default value (now) for at/created at
+	at := GetFormattedDate(time.Now())
 
 	record := Record{
-		Id:          id,
-		Amount:      amount,
-		Description: desc,
-		Type:        _type,
+		Id:          RandID(5),
+		Amount:      0,
+		Description: "",
+		Type:        "in",
 		At:          at,
 	}
+
+	record.editWithParam(params)
 
 	r.Records = append(r.Records, record)
 
 	fmt.Printf("Success, added new record!\n%s\n", record)
 
 	r.SaveToFile()
-
-	return true, ""
 }
 
 func (r *Records) SaveToFile() {
 	data, _ := json.Marshal(r)
 
 	ioutil.WriteFile("data.json", data, 0644)
+}
+
+func (record *Record) editWithParam(params []string) {
+	formatErrorMsg := "Invalid input format!"
+
+	for i, v := range params {
+		if v == "-a" {
+			if len(params) <= i+1 {
+				PrintError(formatErrorMsg)
+			}
+
+			amount, _ := strconv.ParseInt(params[i+1], 10, 64)
+
+			if amount > 0 {
+				record.Amount = amount
+			} else {
+				PrintError("Error, param -a (amount) can't be zero")
+			}
+		}
+
+		if v == "-d" {
+			if len(params) <= i+1 {
+				PrintError(formatErrorMsg)
+			}
+
+			record.Description = params[i+1]
+		}
+
+		if v == "--out" {
+			record.Type = "out"
+		}
+
+		if v == "--in" {
+			record.Type = "in"
+		}
+
+		if v == "-t" {
+			if len(params) <= i+1 {
+				PrintError(formatErrorMsg)
+			}
+
+			if ValidateDate(params[i+1]) == false {
+				PrintError("Invalid date format! \nValid format: \"dd/mm/yyyy hh:MM\" (with double quotes)")
+			}
+
+			record.At = params[i+1]
+		}
+	}
 }

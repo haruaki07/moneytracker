@@ -3,8 +3,10 @@ package main
 import (
 	"bufio"
 	"fmt"
-	"github.com/google/shlex"
 	"os"
+	"os/signal"
+
+	"github.com/google/shlex"
 )
 
 func getCommand() string {
@@ -17,17 +19,14 @@ func getCommand() string {
 	return input
 }
 
-func printError(msg ...string) {
-	if len(msg) > 0 && msg[0] != "" {
-		for _, m := range msg {
-			fmt.Println(m)
-		}
-	} else {
-		fmt.Println("Invalid input command!")
-	}
-}
-
 func main() {
+	c := make(chan os.Signal, 1)
+	signal.Notify(c, os.Interrupt)
+	go func() {
+		<-c
+		os.Exit(0)
+	}()
+
 	var records = GetAll()
 
 	input := getCommand()
@@ -35,7 +34,7 @@ func main() {
 	for input != "exit" {
 		args, err := shlex.Split(input)
 		if err != nil {
-			printError()
+			PrintError()
 			input = getCommand()
 		}
 
@@ -43,10 +42,7 @@ func main() {
 			switch args[0] {
 			case "add":
 				params := args[1:]
-				success, msg := records.AddRecord(params)
-				if success == false {
-					printError(msg)
-				}
+				records.AddRecord(params)
 			case "get":
 				if len(args) > 1 {
 					ids := args[1:]
@@ -56,21 +52,18 @@ func main() {
 				}
 			case "set":
 				params := args[2:]
-				success, msg := records.Update(args[1], params)
-				if success == false {
-					printError(msg)
-				}
+				records.Update(args[1], params)
 			case "del":
 				if len(args) > 1 {
 					ids := args[1:]
 					records.DeleteById(ids)
 				} else {
-					printError("Invalid input format!", "Usage: del [id]...")
+					PrintError("Invalid input format!", "Usage: del [id]...")
 				}
 			case "clear":
 				records.Clear()
 			default:
-				printError()
+				PrintError()
 			}
 		}
 
