@@ -3,9 +3,8 @@ package main
 import (
 	"bufio"
 	"fmt"
-	"os"
-
 	"github.com/google/shlex"
+	"os"
 )
 
 func getCommand() string {
@@ -55,7 +54,19 @@ func main() {
 				} else {
 					fmt.Printf("%s", records)
 				}
-				break
+			case "set":
+				params := args[2:]
+				success, msg := records.Update(args[1], params)
+				if success == false {
+					printError(msg)
+				}
+			case "del":
+				if len(args) > 1 {
+					ids := args[1:]
+					records.DeleteById(ids)
+				} else {
+					printError("Invalid input format!", "Usage: del [id]...")
+				}
 			case "clear":
 				records.Clear()
 			default:
