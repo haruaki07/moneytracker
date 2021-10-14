@@ -66,10 +66,30 @@ func GetAll() Records {
 	return records
 }
 
-func (r *Records) GetById(ids []string) *Records {
+func (r *Records) GetById(params []string) *Records {
 	var results Records
+	var (
+		includeIn  = InArray("--in", params)
+		includeOut = InArray("--out", params)
+	)
+
 	for _, record := range r.Records {
-		for _, id := range ids {
+		for _, id := range params {
+			if includeIn && includeOut {
+				results.Records = r.Records
+				break
+			}
+
+			if includeIn && record.Type == "in" {
+				results.Records = append(results.Records, record)
+				continue
+			}
+
+			if includeOut && record.Type == "out" {
+				results.Records = append(results.Records, record)
+				continue
+			}
+
 			if record.Id == id {
 				results.Records = append(results.Records, record)
 			}
@@ -160,15 +180,8 @@ func (r *Records) AddRecord(params []string) {
 	}
 
 	// amount is required
-	var amountFilled = false
-	for _, p := range params {
-		if p == "-a" {
-			amountFilled = true
-		}
-	}
-
-	if amountFilled == false {
-		PrintError("Error, param -a (amount) is required!")
+	if !InArray("-a", params) {
+		PrintError("Error, -a (amount) is required!")
 		return
 	}
 
@@ -212,7 +225,7 @@ func (record *Record) editWithParam(params []string) {
 			if amount > 0 {
 				record.Amount = amount
 			} else {
-				PrintError("Error, param -a (amount) can't be zero")
+				PrintError("Error, -a (amount) value can't be zero")
 			}
 		}
 

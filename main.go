@@ -20,6 +20,8 @@ func getCommand() string {
 }
 
 func main() {
+	RegisterHelp()
+
 	c := make(chan os.Signal, 1)
 	signal.Notify(c, os.Interrupt)
 	go func() {
@@ -45,8 +47,8 @@ func main() {
 				records.AddRecord(params)
 			case "get":
 				if len(args) > 1 {
-					ids := args[1:]
-					fmt.Printf("%s", records.GetById(ids))
+					params := args[1:]
+					fmt.Printf("%s", records.GetById(params))
 				} else {
 					fmt.Printf("%s", records)
 				}
@@ -62,6 +64,9 @@ func main() {
 				}
 			case "clear":
 				records.Clear()
+			case "help":
+				params := args[1:]
+				ShowHelp(params)
 			default:
 				PrintError()
 			}

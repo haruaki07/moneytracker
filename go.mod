@@ -1,4 +1,4 @@
-module github.com/haruaki07/moneytracker
+module github.com/haruaki07/moneytrack
 
 go 1.16
 

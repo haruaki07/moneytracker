@@ -1,4 +1,4 @@
-# moneytracker
+# moneytrack
 
 # Run
 ```bash 
@@ -7,11 +7,11 @@ go run .
 
 # Usage
 ```bash
-moneytracker> add -a 20000 -d "new income" --in -t "25/10/2021 14:20"
-moneytracker> set <id> -d "out" --in
-moneytracker> get [id]
-moneytracker> del [id]
-moneytracker> clear
+moneytrack> add -a 20000 -d "new income" --in -t "25/10/2021 14:20"
+moneytrack> set <id> -d "out" --in
+moneytrack> get [id]
+moneytrack> del [id]
+moneytrack> clear
 ```
 
 ## Command List
@@ -33,7 +33,7 @@ Add new record.
 Update selected record.
 ```bash
   Example: 
-    set [id] --out
+    set <id> --out
 
   Arguments:
     -a <amount>         - Set amount
@@ -48,8 +48,12 @@ Get all records, pass id if want to get specific record.
 ```bash
   Example: 
     get # get all
-    get <id> # get one
-    get <id> <id>
+    get --in # get all income
+    get <id> <id> # get by id
+
+  Arguments:
+    --in                - Get all income
+    --out               - Get all outcome
 ```
 
 ### del
@@ -61,10 +65,18 @@ Delete record.
 ```
 
 ### clear
-Clear all records.
+Delete all records.
 ```bash
   Example: 
     clear
+```
+
+### help
+Display help.
+```bash
+  Example: 
+    help
+    help <command>
 ```
 
 ### exit

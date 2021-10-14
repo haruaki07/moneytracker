@@ -44,3 +44,15 @@ func PrintError(msg ...string) {
 		fmt.Println("Invalid input command!")
 	}
 }
+
+func InArray(str string, arr []string) bool {
+	var found = false
+
+	for _, v := range arr {
+		if v == str {
+			found = true
+		}
+	}
+
+	return found
+}
